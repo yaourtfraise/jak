@@ -40,13 +40,12 @@
     ></video>
   </a-assets>
 
-  <!-- marker -->
+  <!-- marker Hiro -->
   <a-marker
     preset="hiro"
     id="marker"
     emitevents="true"
   >
-
     <a-video
       src="#video"
       width="1"
@@ -54,10 +53,9 @@
       rotation="-90 0 0"
       position="0 0 0"
     ></a-video>
-
   </a-marker>
 
-  <!-- camera -->
+  <!-- caméra -->
   <a-entity camera></a-entity>
 
 </a-scene>
@@ -66,7 +64,7 @@
   const marker = document.querySelector("#marker");
   const video = document.querySelector("#video");
 
-  // iOS + Chrome fix
+  // fallback interaction iOS/Chrome
   document.body.addEventListener("click", () => {
     video.play().catch(() => {});
   });
@@ -80,6 +78,10 @@
     video.currentTime = 0;
   });
 </script>
+
+</body>
+</html>
+
 
 </body>
 </html>
