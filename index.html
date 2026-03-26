@@ -17,9 +17,7 @@
   </style>
 </head>
 <body>
-
 <div id="debug">Initialisation...</div>
-
 <a-scene
   embedded
   arjs="sourceType: webcam; debugUIEnabled: false;"
@@ -28,23 +26,10 @@
 >
   <a-assets timeout="10000">
     <video id="video1" src="video1.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <audio  id="son1"  src="son1.mp3"  preload="auto"></audio>
-    <video id="video2" src="video2.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <audio  id="son2"  src="son2.mp3"  preload="auto"></audio>
-    <video id="video3" src="video3.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <audio  id="son3"  src="son3.mp3"  preload="auto"></audio>
   </a-assets>
 
   <a-marker id="marker1" type="pattern" url="pattern.patt" smooth="true" smoothCount="5">
     <a-video src="#video1" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
-  </a-marker>
-
-  <a-marker id="marker2" type="pattern" url="marker2_plus.patt" smooth="true" smoothCount="5">
-    <a-video src="#video2" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
-  </a-marker>
-
-  <a-marker id="marker3" type="pattern" url="marker3_triangle.patt" smooth="true" smoothCount="5">
-    <a-video src="#video3" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
   </a-marker>
 
   <a-entity camera></a-entity>
@@ -54,35 +39,25 @@
   const log = msg => document.getElementById("debug").textContent = msg;
 
   document.body.addEventListener("click", () => {
-    document.querySelectorAll("video, audio").forEach(m => m.play().catch(() => {}));
+    document.querySelectorAll("video").forEach(m => m.play().catch(() => {}));
   }, { once: true });
 
   document.querySelector("a-scene").addEventListener("loaded", () => {
     log("Pret — montre le marqueur");
   });
 
-  const cartes = [
-    { markerId: "marker1", videoId: "video1", audioId: "son1" },
-    { markerId: "marker2", videoId: "video2", audioId: "son2" },
-    { markerId: "marker3", videoId: "video3", audioId: "son3" },
-  ];
+  const marker = document.getElementById("marker1");
+  const video  = document.getElementById("video1");
 
-  cartes.forEach(({ markerId, videoId, audioId }) => {
-    const marker = document.getElementById(markerId);
-    const video  = document.getElementById(videoId);
-    const audio  = document.getElementById(audioId);
+  marker.addEventListener("markerFound", () => {
+    log("Marqueur detecte !");
+    video.play().catch(() => {});
+  });
 
-    marker.addEventListener("markerFound", () => {
-      log("Marqueur detecte ! " + markerId);
-      video.play().catch(() => {});
-      if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
-    });
-
-    marker.addEventListener("markerLost", () => {
-      log("Pret — montre le marqueur");
-      video.pause(); video.currentTime = 0;
-      if (audio) { audio.pause(); audio.currentTime = 0; }
-    });
+  marker.addEventListener("markerLost", () => {
+    log("Pret — montre le marqueur");
+    video.pause();
+    video.currentTime = 0;
   });
 </script>
 </body>
