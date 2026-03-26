@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <title>AR Multi-Cartes</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -10,10 +11,7 @@
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    body { margin: 0; overflow: hidden; }
   </style>
 </head>
 
@@ -25,54 +23,132 @@
   renderer="logarithmicDepthBuffer: true;"
 >
 
-  <!-- assets -->
+  <!-- ===== ASSETS ===== -->
   <a-assets>
+
+    <!-- Carte 1 -->
     <video
-      id="video"
-      src="video.mp4"
+      id="video1"
+      src="video1.mp4"
       preload="auto"
       loop
       muted
-      autoplay
       playsinline
       webkit-playsinline
       crossorigin="anonymous"
     ></video>
+    <audio id="son1" src="son1.mp3" preload="auto"></audio>
+
+    <!-- Carte 2 -->
+    <video
+      id="video2"
+      src="video2.mp4"
+      preload="auto"
+      loop
+      muted
+      playsinline
+      webkit-playsinline
+      crossorigin="anonymous"
+    ></video>
+    <audio id="son2" src="son2.mp3" preload="auto"></audio>
+
+    <!-- Carte 3 -->
+    <video
+      id="video3"
+      src="video3.mp4"
+      preload="auto"
+      loop
+      muted
+      playsinline
+      webkit-playsinline
+      crossorigin="anonymous"
+    ></video>
+    <audio id="son3" src="son3.mp3" preload="auto"></audio>
+
+    <!-- Ajoute autant de blocs que tu as de cartes -->
+
   </a-assets>
 
- c
 
+  <!-- ===== MARQUEUR 1 — pattern: pattern-carte1.patt ===== -->
+  <a-marker id="marker1" type="pattern" url="bois.patt">
     <a-video
-      src="#video"
+      src="#video1"
       width="1"
       height="0.56"
       rotation="-90 0 0"
       position="0 0 0"
     ></a-video>
-
   </a-marker>
 
-  <!-- camera -->
+  <!-- ===== MARQUEUR 2 — pattern: pattern-carte2.patt ===== -->
+  <a-marker id="marker2" type="pattern" url="pattern-carte2.patt">
+    <a-video
+      src="#video2"
+      width="1"
+      height="0.56"
+      rotation="-90 0 0"
+      position="0 0 0"
+    ></a-video>
+  </a-marker>
+
+  <!-- ===== MARQUEUR 3 — pattern: pattern-carte3.patt ===== -->
+  <a-marker id="marker3" type="pattern" url="pattern-carte3.patt">
+    <a-video
+      src="#video3"
+      width="1"
+      height="0.56"
+      rotation="-90 0 0"
+      position="0 0 0"
+    ></a-video>
+  </a-marker>
+
+  <!-- Caméra -->
   <a-entity camera></a-entity>
 
 </a-scene>
 
+
 <script>
-  const marker = document.querySelector("#marker");
-  const video = document.querySelector("#video");
-
-  // iOS + Chrome fix
+  // Débloque l'audio/vidéo sur iOS au premier tap
   document.body.addEventListener("click", () => {
-    video.play().catch(() => {});
-  });
+    document.querySelectorAll("video, audio").forEach(m => m.play().catch(() => {}));
+  }, { once: true });
 
-  marker.addEventListener("markerFound", () => {
-    video.play().catch(() => {});
-  });
+  // -------------------------------------------------------
+  // Configuration : liste toutes tes cartes ici
+  // markerId    → id du <a-marker>
+  // videoId     → id de la <video>
+  // audioId     → id du <audio>
+  // -------------------------------------------------------
+  const cartes = [
+    { markerId: "marker1", videoId: "video1", audioId: "son1" },
+    { markerId: "marker2", videoId: "video2", audioId: "son2" },
+    { markerId: "marker3", videoId: "video3", audioId: "son3" },
+    // ajoute d'autres lignes ici si besoin
+  ];
 
-  marker.addEventListener("markerLost", () => {
-    video.pause();
-    video.currentTime = 0;
+  cartes.forEach(({ markerId, videoId, audioId }) => {
+    const marker = document.getElementById(markerId);
+    const video  = document.getElementById(videoId);
+    const audio  = document.getElementById(audioId);
+
+    marker.addEventListener("markerFound", () => {
+      video.play().catch(() => {});
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
+    });
+
+    marker.addEventListener("markerLost", () => {
+      video.pause();
+      video.currentTime = 0;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
   });
 </script>
 
