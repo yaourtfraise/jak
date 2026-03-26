@@ -30,7 +30,7 @@
     <audio id="son-vent"    src="montagne-vent.mp3"    preload="auto" loop></audio>
   </a-assets>
 
-  <a-marker id="marker1" type="preset" value="hiro">
+  <a-marker id="marker1" type="pattern" url="pattern.patt" smooth="true" smoothCount="5">
     <a-video src="#video1" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
   </a-marker>
 
@@ -44,25 +44,52 @@
   const vent    = document.getElementById("son-vent");
   const sons = [feuille, vent];
 
+  let markerVisible = false;
+  let keepAlive = null;
+
+  // Force la vidéo à rester active toutes les 500ms
+  function startKeepAlive() {
+    stopKeepAlive();
+    keepAlive = setInterval(() => {
+      if (markerVisible && video.paused) {
+        video.play().catch(() => {});
+      }
+    }, 500);
+  }
+
+  function stopKeepAlive() {
+    if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
+  }
+
+  // Débloque l'audio au premier touch
   document.body.addEventListener("click", () => {
     video.play().catch(() => {});
     sons.forEach(s => s.play().then(() => s.pause()).catch(() => {}));
   }, { once: true });
 
+  // Relance aussi si la vidéo s'arrête toute seule
+  video.addEventListener("pause", () => {
+    if (markerVisible) video.play().catch(() => {});
+  });
+
   document.querySelector("a-scene").addEventListener("loaded", () => {
-    log("Pret — montre le marqueur Hiro");
+    log("Pret — montre le marqueur");
   });
 
   const marker = document.getElementById("marker1");
 
   marker.addEventListener("markerFound", () => {
     log("Marqueur detecte !");
+    markerVisible = true;
     video.play().catch(() => {});
     sons.forEach(s => { s.currentTime = 0; s.play().catch(() => {}); });
+    startKeepAlive();
   });
 
   marker.addEventListener("markerLost", () => {
     log("Pret — montre le marqueur");
+    markerVisible = false;
+    stopKeepAlive();
     video.pause(); video.currentTime = 0;
     sons.forEach(s => { s.pause(); s.currentTime = 0; });
   });
