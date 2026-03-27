@@ -25,13 +25,24 @@
   vr-mode-ui="enabled: false"
 >
   <a-assets timeout="10000">
+    <!-- Carte 1 -->
     <video id="video1" src="montagne.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <audio id="son-feuille" src="montagne-feuille.mp3" preload="auto" loop></audio>
-    <audio id="son-vent"    src="montagne-vent.mp3"    preload="auto" loop></audio>
+    <audio id="son1a" src="montagne-feuille.mp3" preload="auto" loop></audio>
+    <audio id="son1b" src="montagne-vent.mp3"    preload="auto" loop></audio>
+    <!-- Carte 2 — remplace par tes fichiers -->
+    <video id="video2" src="pont.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <audio id="son2a" src="son2a.mp3" preload="auto" loop></audio>
+    <audio id="son2b" src="son2b.mp3" preload="auto" loop></audio>
   </a-assets>
 
+  <!-- Marqueur 1 -->
   <a-marker id="marker1" type="pattern" url="tambour.patt" smooth="true" smoothCount="5">
     <a-video src="#video1" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
+  </a-marker>
+
+  <!-- Marqueur 2 — remplace par ton .patt -->
+  <a-marker id="marker2" type="pattern" url="oiseau.patt" smooth="true" smoothCount="5">
+    <a-video src="#video2" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
   </a-marker>
 
   <a-entity camera></a-entity>
@@ -39,59 +50,70 @@
 
 <script>
   const log = msg => document.getElementById("debug").textContent = msg;
-  const video   = document.getElementById("video1");
-  const feuille = document.getElementById("son-feuille");
-  const vent    = document.getElementById("son-vent");
-  const sons = [feuille, vent];
 
-  let markerVisible = false;
-  let keepAlive = null;
-
-  // Force la vidéo à rester active toutes les 500ms
-  function startKeepAlive() {
-    stopKeepAlive();
-    keepAlive = setInterval(() => {
-      if (markerVisible && video.paused) {
-        video.play().catch(() => {});
-      }
-    }, 500);
-  }
-
-  function stopKeepAlive() {
-    if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
-  }
+  const cartes = [
+    {
+      markerId: "marker1",
+      video: document.getElementById("video1"),
+      sons: [document.getElementById("son1a"), document.getElementById("son1b")]
+    },
+    {
+      markerId: "marker2",
+      video: document.getElementById("video2"),
+      sons: [document.getElementById("son2a"), document.getElementById("son2b")]
+    }
+  ];
 
   // Débloque l'audio au premier touch
   document.body.addEventListener("click", () => {
-    video.play().catch(() => {});
-    sons.forEach(s => s.play().then(() => s.pause()).catch(() => {}));
+    cartes.forEach(c => {
+      c.video.play().catch(() => {});
+      c.sons.forEach(s => s.play().then(() => s.pause()).catch(() => {}));
+    });
   }, { once: true });
 
-  // Relance aussi si la vidéo s'arrête toute seule
-  video.addEventListener("pause", () => {
-    if (markerVisible) video.play().catch(() => {});
-  });
-
   document.querySelector("a-scene").addEventListener("loaded", () => {
-    log("Pret — montre le marqueur");
+    log("Pret — montre un marqueur");
   });
 
-  const marker = document.getElementById("marker1");
+  cartes.forEach(carte => {
+    let markerVisible = false;
+    let keepAlive = null;
 
-  marker.addEventListener("markerFound", () => {
-    log("Marqueur detecte !");
-    markerVisible = true;
-    video.play().catch(() => {});
-    sons.forEach(s => { s.currentTime = 0; s.play().catch(() => {}); });
-    startKeepAlive();
-  });
+    function startKeepAlive() {
+      stopKeepAlive();
+      keepAlive = setInterval(() => {
+        if (markerVisible && carte.video.paused) {
+          carte.video.play().catch(() => {});
+        }
+      }, 500);
+    }
 
-  marker.addEventListener("markerLost", () => {
-    log("Pret — montre le marqueur");
-    markerVisible = false;
-    stopKeepAlive();
-    video.pause(); video.currentTime = 0;
-    sons.forEach(s => { s.pause(); s.currentTime = 0; });
+    function stopKeepAlive() {
+      if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
+    }
+
+    carte.video.addEventListener("pause", () => {
+      if (markerVisible) carte.video.play().catch(() => {});
+    });
+
+    const marker = document.getElementById(carte.markerId);
+
+    marker.addEventListener("markerFound", () => {
+      log("Marqueur detecte ! " + carte.markerId);
+      markerVisible = true;
+      carte.video.play().catch(() => {});
+      carte.sons.forEach(s => { s.currentTime = 0; s.play().catch(() => {}); });
+      startKeepAlive();
+    });
+
+    marker.addEventListener("markerLost", () => {
+      log("Pret — montre un marqueur");
+      markerVisible = false;
+      stopKeepAlive();
+      carte.video.pause(); carte.video.currentTime = 0;
+      carte.sons.forEach(s => { s.pause(); s.currentTime = 0; });
+    });
   });
 </script>
 </body>
