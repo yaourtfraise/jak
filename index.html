@@ -28,21 +28,51 @@
     <!-- Carte 1 -->
     <video id="video1" src="montagne.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
     <audio id="son1a" src="montagne-feuille.mp3" preload="auto" loop></audio>
-    <audio id="son1b" src="montagne-vent.mp3"    preload="auto" loop></audio>
-    <!-- Carte 2 — remplace par tes fichiers -->
+    <audio id="son1b" src="montagne-vent.mp3" preload="auto" loop></audio>
+    <!-- Carte 2 -->
     <video id="video2" src="pont.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <audio id="son2a" src="son2a.mp3" preload="auto" loop></audio>
-    <audio id="son2b" src="son2b.mp3" preload="auto" loop></audio>
+    <audio id="son2a" src="pont-eau.mp3" preload="auto" loop></audio>
+    <audio id="son2b" src="pont-vent.mp3" preload="auto" loop></audio>
+    <!-- Carte 3 -->
+    <video id="video3" src="temple.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <audio id="son3a" src="son2a.mp3" preload="auto" loop></audio>
+    <!-- Carte 4 -->
+    <video id="video4" src="chasse.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <audio id="son4a" src="chasse-crepitement.mp3" preload="auto" loop></audio>
+    <audio id="son4b" src="chasse-aboiements.mp3" preload="auto" loop></audio>
+    <!-- Carte 5 -->
+    <video id="video5" src="danse.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <audio id="son5a" src="danse-footsteps.mp3" preload="auto" loop></audio>
+    <audio id="son5b" src="danse-percussions.mp3" preload="auto" loop></audio>
+    <!-- Carte 6 -->
+    <video id="video6" src="pyro.mp4" preload="auto" loop muted playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <audio id="son6a" src="pyrogravure1.mp3" preload="auto" loop></audio>
+    <audio id="son6b" src="pyrogravure2.mp3" preload="auto" loop></audio>
   </a-assets>
 
   <!-- Marqueur 1 -->
-  <a-marker id="marker1" type="pattern" url="tambour.patt" smooth="true" smoothCount="5">
+  <a-marker id="marker1" type="pattern" url="pont.patt" smooth="true" smoothCount="5">
     <a-video src="#video1" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
   </a-marker>
-
-  <!-- Marqueur 2 — remplace par ton .patt -->
-  <a-marker id="marker2" type="pattern" url="oiseau.patt" smooth="true" smoothCount="5">
+  <!-- Marqueur 2 -->
+  <a-marker id="marker2" type="pattern" url="montagne.patt" smooth="true" smoothCount="5">
     <a-video src="#video2" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
+  </a-marker>
+  <!-- Marqueur 3 -->
+  <a-marker id="marker3" type="pattern" url="temple.patt" smooth="true" smoothCount="5">
+    <a-video src="#video3" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
+  </a-marker>
+  <!-- Marqueur 4 -->
+  <a-marker id="marker4" type="pattern" url="chasse.patt" smooth="true" smoothCount="5">
+    <a-video src="#video4" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
+  </a-marker>
+  <!-- Marqueur 5 -->
+  <a-marker id="marker5" type="pattern" url="danse.patt" smooth="true" smoothCount="5">
+    <a-video src="#video5" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
+  </a-marker>
+  <!-- Marqueur 6 -->
+  <a-marker id="marker6" type="pattern" url="pyro.patt" smooth="true" smoothCount="5">
+    <a-video src="#video6" width="1" height="0.56" rotation="-90 0 0" position="0 0 0"></a-video>
   </a-marker>
 
   <a-entity camera></a-entity>
@@ -52,23 +82,22 @@
   const log = msg => document.getElementById("debug").textContent = msg;
 
   const cartes = [
-    {
-      markerId: "marker1",
-      video: document.getElementById("video1"),
-      sons: [document.getElementById("son1a"), document.getElementById("son1b")]
-    },
-    {
-      markerId: "marker2",
-      video: document.getElementById("video2"),
-      sons: [document.getElementById("son2a"), document.getElementById("son2b")]
-    }
+    { markerId: "marker1", videoId: "video1", sonIds: ["son1a", "son1b"] },
+    { markerId: "marker2", videoId: "video2", sonIds: ["son2a", "son2b"] },
+    { markerId: "marker3", videoId: "video3", sonIds: ["son3a"] },
+    { markerId: "marker4", videoId: "video4", sonIds: ["son4a", "son4b"] },
+    { markerId: "marker5", videoId: "video5", sonIds: ["son5a", "son5b"] },
+    { markerId: "marker6", videoId: "video6", sonIds: ["son6a", "son6b"] },
   ];
 
   // Débloque l'audio au premier touch
   document.body.addEventListener("click", () => {
     cartes.forEach(c => {
-      c.video.play().catch(() => {});
-      c.sons.forEach(s => s.play().then(() => s.pause()).catch(() => {}));
+      document.getElementById(c.videoId).play().catch(() => {});
+      c.sonIds.forEach(id => {
+        const s = document.getElementById(id);
+        s.play().then(() => s.pause()).catch(() => {});
+      });
     });
   }, { once: true });
 
@@ -77,15 +106,15 @@
   });
 
   cartes.forEach(carte => {
+    const video = document.getElementById(carte.videoId);
+    const sons  = carte.sonIds.map(id => document.getElementById(id));
     let markerVisible = false;
     let keepAlive = null;
 
     function startKeepAlive() {
       stopKeepAlive();
       keepAlive = setInterval(() => {
-        if (markerVisible && carte.video.paused) {
-          carte.video.play().catch(() => {});
-        }
+        if (markerVisible && video.paused) video.play().catch(() => {});
       }, 500);
     }
 
@@ -93,8 +122,8 @@
       if (keepAlive) { clearInterval(keepAlive); keepAlive = null; }
     }
 
-    carte.video.addEventListener("pause", () => {
-      if (markerVisible) carte.video.play().catch(() => {});
+    video.addEventListener("pause", () => {
+      if (markerVisible) video.play().catch(() => {});
     });
 
     const marker = document.getElementById(carte.markerId);
@@ -102,8 +131,8 @@
     marker.addEventListener("markerFound", () => {
       log("Marqueur detecte ! " + carte.markerId);
       markerVisible = true;
-      carte.video.play().catch(() => {});
-      carte.sons.forEach(s => { s.currentTime = 0; s.play().catch(() => {}); });
+      video.play().catch(() => {});
+      sons.forEach(s => { s.currentTime = 0; s.play().catch(() => {}); });
       startKeepAlive();
     });
 
@@ -111,8 +140,8 @@
       log("Pret — montre un marqueur");
       markerVisible = false;
       stopKeepAlive();
-      carte.video.pause(); carte.video.currentTime = 0;
-      carte.sons.forEach(s => { s.pause(); s.currentTime = 0; });
+      video.pause(); video.currentTime = 0;
+      sons.forEach(s => { s.pause(); s.currentTime = 0; });
     });
   });
 </script>
