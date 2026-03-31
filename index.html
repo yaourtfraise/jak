@@ -6,7 +6,20 @@
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
   <style>
-    body { margin: 0; overflow: hidden; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { background: #000; overflow: hidden; }
+
+    .a-loader-title { display: none !important; }
+
+    canvas, a-scene, .a-canvas {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    a-scene.a-scene--loaded canvas,
+    a-scene.a-scene--loaded .a-canvas {
+      opacity: 1;
+    }
+
     #debug {
       position: fixed; top: 10px; left: 10px;
       background: rgba(0,0,0,0.6); color: #0f0;
